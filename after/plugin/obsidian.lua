@@ -9,18 +9,26 @@ require("obsidian").setup({
   disable_frontmatter = true,
   ---@param spec { id: string, dir: obsidian.Path, title: string|? }
   ---@return string|obsidian.Path The full path to the new note.
+
   note_path_func = function(spec)
     -- This is equivalent to the default behavior.
     local path = spec.dir / tostring(spec.title or spec.id)
     return path:with_suffix(".md")
   end,
 
+  mappings = {
+    ["<cr>"] = {
+      action = function()
+        if require("obsidian").util.cursor_on_markdown_link(nil, nil, true) then
+          return "<cmd>ObsidianFollowLink<CR>"
+        end
+      end,
+      opts = { expr = true, buffer = true },
+    }
+  },
+
   ui = {
     enable = false,
-    checkboxes = {
-      [" "] = { char = "☐", hl_group = "ObsidianTodo" },
-      ["x"] = { char = "✔", hl_group = "ObsidianDone" },
-    }
   },
 
   notes_subdir = "00 Inbox",
@@ -40,4 +48,4 @@ vim.keymap.set("n", "<leader>oo", ":ObsidianOpen<cr>")
 vim.keymap.set("n", "<leader>on", ":ObsidianNew<cr>")
 vim.keymap.set("n", "<leader>ont", ":ObsidianNewFromTemplate<cr>")
 vim.keymap.set("n", "<leader>ot", ":ObsidianToday<cr>")
-vim.keymap.set("n", "<leader>zt", ":ObsidianToggleCheckbox<cr>")
+-- vim.keymap.set("n", "<leader>zt", ":ObsidianToggleCheckbox<cr>")
