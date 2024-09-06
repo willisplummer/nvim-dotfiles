@@ -1,5 +1,10 @@
 return require('lazy').setup({
     {
+        'MeanderingProgrammer/render-markdown.nvim',
+        opts = {},
+        dependencies = { 'nvim-treesitter/nvim-treesitter', 'echasnovski/mini.icons' }, -- if you use the mini.nvim suite
+    },
+    {
         "epwalsh/obsidian.nvim",
         version = "*",
         lazy = true,
@@ -26,8 +31,7 @@ return require('lazy').setup({
         'stevearc/oil.nvim',
         opts = {},
         -- Optional dependencies
-        -- dependencies = { { "echasnovski/mini.icons", opts = {} } },
-        dependencies = { "nvim-tree/nvim-web-devicons" }, -- use if prefer nvim-web-devicons
+        dependencies = { { "echasnovski/mini.icons", opts = {} } },
     },
     {
         "kylechui/nvim-surround",

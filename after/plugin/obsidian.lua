@@ -15,16 +15,8 @@ require("obsidian").setup({
     return path:with_suffix(".md")
   end,
 
-
-  mappings = {
-    ["<leader>zt"] = {
-      action = function()
-        return require('obsidian').util.toggle_checkbox()
-      end,
-      opts = { buffer = true },
-    },
-  },
   ui = {
+    enable = false,
     checkboxes = {
       [" "] = { char = "☐", hl_group = "ObsidianTodo" },
       ["x"] = { char = "✔", hl_group = "ObsidianDone" },
@@ -48,3 +40,4 @@ vim.keymap.set("n", "<leader>oo", ":ObsidianOpen<cr>")
 vim.keymap.set("n", "<leader>on", ":ObsidianNew<cr>")
 vim.keymap.set("n", "<leader>ont", ":ObsidianNewFromTemplate<cr>")
 vim.keymap.set("n", "<leader>ot", ":ObsidianToday<cr>")
+vim.keymap.set("n", "<leader>zt", ":ObsidianToggleCheckbox<cr>")
