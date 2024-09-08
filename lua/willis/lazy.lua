@@ -12,7 +12,6 @@ return require('lazy').setup({
         dependencies = {
             "nvim-lua/plenary.nvim",
             "hrsh7th/nvim-cmp",
-
         }
     },
     {
