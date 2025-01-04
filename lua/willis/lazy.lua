@@ -2,7 +2,7 @@ return require('lazy').setup({
     {
         'MeanderingProgrammer/render-markdown.nvim',
         opts = {},
-        dependencies = { 'nvim-treesitter/nvim-treesitter', 'echasnovski/mini.icons' }, -- if you use the mini.nvim suite
+        -- dependencies = { 'nvim-treesitter/nvim-treesitter', 'echasnovski/mini.icons' }, -- if you use the mini.nvim suite
     },
     {
         "epwalsh/obsidian.nvim",
@@ -43,12 +43,12 @@ return require('lazy').setup({
         end
     },
 
-    { 'nvim-treesitter/nvim-treesitter', build = ':TSUpdate' },
+    -- { 'nvim-treesitter/nvim-treesitter', build = ':TSUpdate' },
 
     --  'nvim-treesitter/playground',
     'ThePrimeagen/harpoon',
     'mbbill/undotree',
-    'tpope/vim-fugitive',
+    -- 'tpope/vim-fugitive',
     'simrat39/rust-tools.nvim',
 
     {
@@ -57,8 +57,8 @@ return require('lazy').setup({
         dependencies = {
             -- LSP Support
             { 'neovim/nvim-lspconfig' },             -- Required
-            { 'williamboman/mason.nvim' },           -- Optional
-            { 'williamboman/mason-lspconfig.nvim' }, -- Optional
+            -- { 'williamboman/mason.nvim' },           -- Optional
+            -- { 'williamboman/mason-lspconfig.nvim' }, -- Optional
 
             -- Autocompletion
             { 'hrsh7th/nvim-cmp' },     -- Required
@@ -71,15 +71,12 @@ return require('lazy').setup({
         }
     },
 
-
-
     {
         "iamcco/markdown-preview.nvim",
         build = function() vim.fn["mkdp#util#install"]() end,
     },
 
     'vim-pandoc/vim-pandoc',
-
     'vim-pandoc/vim-pandoc-syntax',
 
     'christoomey/vim-tmux-navigator',
@@ -120,14 +117,14 @@ return require('lazy').setup({
     'stevearc/conform.nvim',
 
     -- Debugger
-    {
-        'mfussenegger/nvim-dap',
-        dependencies = {
-            "rcarriga/nvim-dap-ui",
-            "theHamsta/nvim-dap-virtual-text",
-            "nvim-neotest/nvim-nio",
-            "williamboman/mason.nvim",
-            "jay-babu/mason-nvim-dap.nvim",
-        },
-    }
+    -- {
+    --     'mfussenegger/nvim-dap',
+    --     dependencies = {
+    --         "rcarriga/nvim-dap-ui",
+    --         "theHamsta/nvim-dap-virtual-text",
+    --         "nvim-neotest/nvim-nio",
+    --         -- "williamboman/mason.nvim",
+    --         -- "jay-babu/mason-nvim-dap.nvim",
+    --     },
+    -- }
 })
