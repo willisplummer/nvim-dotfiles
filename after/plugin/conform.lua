@@ -1,4 +1,5 @@
-require("conform").setup({
+local conform = require("conform")
+conform.setup({
   -- Map of filetype to formatters
   formatters_by_ft = {
     lua = { "stylua" },
@@ -7,8 +8,9 @@ require("conform").setup({
     -- Use a sub-list to run only the first available formatter
     javascript = { "prettierd", "prettier", stop_after_first = true },
     typescript = { "prettierd", "prettier", stop_after_first = true },
-    javascriptreact = { "prettierd", "prettier", stop_after_first=true },
-    typescriptreact = { "prettierd", "prettier", stop_after_first=true } ,
+    javascriptreact = { "prettierd", "prettier", stop_after_first = true },
+    typescriptreact = { "prettierd", "prettier", stop_after_first = true },
+    nix = { "nixfmt", stop_after_first = true }, 
     -- Use the "*" filetype to run formatters on all filetypes.
     -- ["*"] = { "codespell" },
     -- Use the "_" filetype to run formatters on filetypes that don't
@@ -24,3 +26,5 @@ require("conform").setup({
     timeout_ms = 500,
   },
 })
+
+vim.keymap.set("n", "<leader>f", function() conform.format({ async = true }) end)
