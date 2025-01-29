@@ -76,9 +76,6 @@ return {
 		},
 	},
 
-	-- ColorScheme
-	"folke/tokyonight.nvim",
-
 	"nmac427/guess-indent.nvim",
 
 	"stevearc/conform.nvim",
