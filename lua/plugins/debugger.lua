@@ -6,7 +6,7 @@ return {
 			"theHamsta/nvim-dap-virtual-text",
 			"nvim-neotest/nvim-nio",
 		},
-		setup = function()
+		config = function()
 			local dap = require("dap")
 			local ui = require("dapui")
 

@@ -21,7 +21,7 @@
   "render-markdown.nvim": { "branch": "main", "commit": "1ba6fb7998985736ca3480366c9792be05b93ad7" },
   "rust-tools.nvim": { "branch": "master", "commit": "676187908a1ce35ffcd727c654ed68d851299d3e" },
   "telescope.nvim": { "branch": "master", "commit": "a0bbec21143c7bc5f8bb02e0005fa0b982edc026" },
-  "tokyonight.nvim": { "branch": "main", "commit": "8cb8b1aded4087712030ef3e840ad6468fbc7b0f" },
+  "tokyonight.nvim": { "branch": "main", "commit": "dca4adba7dc5f09302a00b0e76078d54d82d2658" },
   "undotree": { "branch": "main", "commit": "eab459ab87dd249617b5f7187bb69e614a083047" },
   "vim-tmux-navigator": { "branch": "master", "commit": "d847ea942a5bb4d4fab6efebc9f30d787fd96e65" }
 }
