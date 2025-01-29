@@ -6,11 +6,13 @@ lsp.on_attach(function(client, bufnr)
 	lsp.default_keymaps({ buffer = bufnr })
 end)
 
+local lspconfig = require("lspconfig")
 -- (Optional) Configure lua language server for neovim
-require("lspconfig").lua_ls.setup(lsp.nvim_lua_ls())
+lspconfig.lua_ls.setup(lsp.nvim_lua_ls())
+lspconfig.ccls.setup({})
+lspconfig.zls.setup({})
 
 lsp.skip_server_setup({ "rust_analyzer", "typescript-language-server" })
-require("lspconfig").ccls.setup({})
 lsp.setup()
 
 -- referencing nvim-web-devicons
