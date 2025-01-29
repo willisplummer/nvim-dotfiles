@@ -66,6 +66,10 @@ return {
 			lspconfig.lua_ls.setup({})
 			lspconfig.ccls.setup({})
 			lspconfig.zls.setup({})
+			-- NOTE: somewhere something is installing the zig vim plugin (i suspect in nixos)
+			-- and it automatically runs zig fmt on save which errors if there is a missing semicolon
+			-- it's extremely annoying and this is the fix.
+			vim.cmd("let g:zig_fmt_autosave = 0")
 		end,
 	},
 }

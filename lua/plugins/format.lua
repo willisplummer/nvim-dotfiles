@@ -15,6 +15,7 @@ return {
 					javascriptreact = { "prettierd", "prettier", stop_after_first = true },
 					typescriptreact = { "prettierd", "prettier", stop_after_first = true },
 					nix = { "nixfmt", stop_after_first = true },
+					zig = { "zigfmt", stop_after_first = true },
 					-- Use the "*" filetype to run formatters on all filetypes.
 					-- ["*"] = { "codespell" },
 					-- Use the "_" filetype to run formatters on filetypes that don't
