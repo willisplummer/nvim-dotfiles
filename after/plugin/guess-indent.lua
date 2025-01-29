@@ -1,2 +1,0 @@
-require('guess-indent').setup {}
-

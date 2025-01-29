@@ -27,7 +27,7 @@ return {
 		cmd = "LSPInfo",
 		event = { "BufReadPre", "BufNewFile" },
 		dependencies = {
-			{ "hrshs7th/cmp-nvim-lsp" },
+			{ "hrsh7th/cmp-nvim-lsp" },
 		},
 		init = function()
 			-- reserve a space in the gutter

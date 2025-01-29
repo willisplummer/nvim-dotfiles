@@ -31,46 +31,10 @@ return {
 		"kylechui/nvim-surround",
 		version = "*", -- Use for stability; omit to use `main` branch for the latest features
 		event = "VeryLazy",
-		config = function()
-			require("nvim-surround").setup({
-				-- Configuration here, or leave empty to use defaults
-			})
-		end,
+		opts = {},
 	},
 
-	"ThePrimeagen/harpoon",
-	"mbbill/undotree",
 	"simrat39/rust-tools.nvim",
 
 	"christoomey/vim-tmux-navigator",
-
-	{
-		"echasnovski/mini.comment",
-		event = "VeryLazy",
-		dependencies = { "JoosepAlviste/nvim-ts-context-commentstring" },
-		opts = {
-			options = {
-				custom_commentstring = function()
-					return require("ts_context_commentstring.internal").calculate_commentstring()
-						or vim.bo.commentstring
-				end,
-			},
-		},
-	},
-
-	"nmac427/guess-indent.nvim",
-
-	"stevearc/conform.nvim",
-
-	-- Debugger
-	-- {
-	--     'mfussenegger/nvim-dap',
-	--     dependencies = {
-	--         "rcarriga/nvim-dap-ui",
-	--         "theHamsta/nvim-dap-virtual-text",
-	--         "nvim-neotest/nvim-nio",
-	--         -- "williamboman/mason.nvim",
-	--         -- "jay-babu/mason-nvim-dap.nvim",
-	--     },
-	-- }
 }
