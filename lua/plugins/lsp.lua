@@ -32,6 +32,10 @@ return {
 		init = function()
 			-- reserve a space in the gutter
 			vim.opt.signcolumn = "yes"
+			-- don't show parse errors in a separate window
+			vim.g.zig_fmt_parse_errors = 0
+			-- disable format-on-save from `ziglang/zig.vim`
+			vim.g.zig_fmt_autosave = 0
 		end,
 		config = function()
 			local lsp_defaults = require("lspconfig").util.default_config
@@ -65,11 +69,14 @@ return {
 			local lspconfig = require("lspconfig")
 			lspconfig.lua_ls.setup({})
 			lspconfig.ccls.setup({})
-			lspconfig.zls.setup({})
-			-- NOTE: somewhere something is installing the zig vim plugin (i suspect in nixos)
-			-- and it automatically runs zig fmt on save which errors if there is a missing semicolon
-			-- it's extremely annoying and this is the fix.
-			vim.cmd("let g:zig_fmt_autosave = 0")
+			lspconfig.zls.setup({
+				settings = {
+					zls = {
+						enable_build_on_save = true,
+						build_on_save_step = "check",
+					},
+				},
+			})
 		end,
 	},
 }
