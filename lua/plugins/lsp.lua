@@ -1,32 +1,26 @@
 return {
 	{
 		"williamboman/mason.nvim", -- Mason for LSP management
-		event = "VeryLazy", -- Use an appropriate event, like "VeryLazy"
+		-- event = "VeryLazy", -- Use an appropriate event, like "VeryLazy"
 		cond = function()
 			-- Only load mason.nvim if running on macOS
 			return vim.fn.has("macunix") == 1
 		end,
+		dependencies = {
+			{ "williamboman/mason-lspconfig.nvim" },
+		},
 		config = function()
-			-- Setup Mason only for macOS
-			if vim.fn.has("macunix") == 1 then
-				require("mason").setup()
-				require("mason-lspconfig").setup({
-					ensure_installed = { "pyright", "tsserver" }, -- Customize with your desired LSPs
-				})
-			end
-		end,
-	},
-	{
-		"williamboman/mason-lspconfig.nvim", -- Mason integration with lspconfig
-		after = "mason.nvim", -- Ensure mason-lspconfig loads after mason.nvim
-		cond = function()
-			-- Only load mason.nvim if running on macOS
-			return vim.fn.has("macunix") == 1
-		end,
-		config = function()
-			-- This part configures Mason's LSP integration after it’s installed
+			require("mason").setup()
 			require("mason-lspconfig").setup({
-				-- Add further LSP server configuration here
+				ensure_installed = { "pyright", "ts_ls" }, -- Example LSPs to install
+				automatic_installation = true,
+				automatic_enable = false,
+				handlers = {
+					function(server_name)
+						-- Setup individual LSP server configurations here
+						require('lspconfig')[server_name].setup({})
+					end,
+				}
 			})
 		end,
 	},
@@ -75,7 +69,7 @@ return {
 			-- Add cmp_nvim_lsp capabilities settings to lspconfig
 			-- This should be executed before you configure any language server
 			lsp_defaults.capabilities =
-				vim.tbl_deep_extend("force", lsp_defaults.capabilities, require("cmp_nvim_lsp").default_capabilities())
+					vim.tbl_deep_extend("force", lsp_defaults.capabilities, require("cmp_nvim_lsp").default_capabilities())
 
 			-- LSPAttach is where you enable features that onl workk
 			-- if there is a language server active in the file

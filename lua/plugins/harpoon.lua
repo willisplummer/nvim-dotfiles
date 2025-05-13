@@ -3,6 +3,10 @@ return {
 		"ThePrimeagen/harpoon",
 		branch = "harpoon2",
 		dependencies = { "nvim-lua/plenary.nvim" },
+		cond = function()
+			-- TODO: Only load harpoon if not on macOS
+			return vim.fn.has("macunix") == 0
+		end,
 		config = function()
 			local harpoon = require("harpoon")
 			harpoon:setup()
