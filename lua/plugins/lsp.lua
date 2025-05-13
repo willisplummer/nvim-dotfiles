@@ -1,5 +1,36 @@
 return {
 	{
+		"williamboman/mason.nvim", -- Mason for LSP management
+		event = "VeryLazy", -- Use an appropriate event, like "VeryLazy"
+		cond = function()
+			-- Only load mason.nvim if running on macOS
+			return vim.fn.has("macunix") == 1
+		end,
+		config = function()
+			-- Setup Mason only for macOS
+			if vim.fn.has("macunix") == 1 then
+				require("mason").setup()
+				require("mason-lspconfig").setup({
+					ensure_installed = { "pyright", "tsserver" }, -- Customize with your desired LSPs
+				})
+			end
+		end,
+	},
+	{
+		"williamboman/mason-lspconfig.nvim", -- Mason integration with lspconfig
+		after = "mason.nvim", -- Ensure mason-lspconfig loads after mason.nvim
+		cond = function()
+			-- Only load mason.nvim if running on macOS
+			return vim.fn.has("macunix") == 1
+		end,
+		config = function()
+			-- This part configures Mason's LSP integration after it’s installed
+			require("mason-lspconfig").setup({
+				-- Add further LSP server configuration here
+			})
+		end,
+	},
+	{
 		"hrsh7th/nvim-cmp",
 		event = "InsertEnter",
 		config = function()
