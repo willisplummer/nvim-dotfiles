@@ -69,7 +69,7 @@ return {
 
 			-- Setup language servers
 			local lspconfig = require("lspconfig")
-			lspconfig.tsserver.setup({})
+			lspconfig.ts_ls.setup({})
 			lspconfig.lua_ls.setup({})
 			lspconfig.ccls.setup({})
 			lspconfig.zls.setup({
