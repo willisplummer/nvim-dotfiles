@@ -7,3 +7,4 @@
 - figure out how to get debugger working with nix
 - snacks picker instead of telescope?
 - git diffing visualizer?
+- still want a better tool for find and replacing
