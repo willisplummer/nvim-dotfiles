@@ -11,6 +11,7 @@ return {
 				},
 				mapping = cmp.mapping.preset.insert({
 					["<C-Space>"] = cmp.mapping.complete(),
+					["<Tab>"] = cmp.mapping.confirm({ select = true }),
 					["<C-u>"] = cmp.mapping.scroll_docs(-4),
 					["<C-d>"] = cmp.mapping.scroll_docs(4),
 				}),
@@ -52,6 +53,7 @@ return {
 				callback = function(event)
 					local opts = { buffer = event.buf }
 
+					vim.keymap.set("n", "<Leader>d", ":lua vim.diagnostic.open_float()<CR>", opts)
 					vim.keymap.set("n", "K", "<cmd>lua vim.lsp.buf.hover()<cr>", opts)
 					vim.keymap.set("n", "gd", "<cmd>lua vim.lsp.buf.definition()<cr>", opts)
 					vim.keymap.set("n", "gD", "<cmd>lua vim.lsp.buf.declaration()<cr>", opts)
@@ -67,6 +69,7 @@ return {
 
 			-- Setup language servers
 			local lspconfig = require("lspconfig")
+			lspconfig.tsserver.setup({})
 			lspconfig.lua_ls.setup({})
 			lspconfig.ccls.setup({})
 			lspconfig.zls.setup({
@@ -76,6 +79,35 @@ return {
 						build_on_save_step = "check",
 					},
 				},
+			})
+
+			-- Set custom icons for LSP diagnostics
+			vim.fn.sign_define(
+				"DiagnosticSignError",
+				{ text = "", texthl = "DiagnosticSignError", numhl = "DiagnosticSignError" }
+			)
+			vim.fn.sign_define(
+				"DiagnosticSignWarn",
+				{ text = "", texthl = "DiagnosticSignWarn", numhl = "DiagnosticSignWarn" }
+			)
+			vim.fn.sign_define(
+				"DiagnosticSignHint",
+				{ text = "", texthl = "DiagnosticSignHint", numhl = "DiagnosticSignHint" }
+			)
+			vim.fn.sign_define(
+				"DiagnosticSignInfo",
+				{ text = "", texthl = "DiagnosticSignInfo", numhl = "DiagnosticSignInfo" }
+			)
+
+			-- Set custom LSP diagnostic icons
+			vim.diagnostic.config({
+				virtual_text = {
+					prefix = "●", -- You can change this to something else like '▶', '✪', etc.
+				},
+				signs = true,
+				update_in_insert = false,
+				underline = true,
+				severity_sort = true,
 			})
 		end,
 	},
