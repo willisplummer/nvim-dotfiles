@@ -1,14 +1,14 @@
 vim.g.mapleader = " "
 
 -- easier exit to file tree -- 'project view'
-vim.keymap.set("n", "<leader>pv", '<Cmd>Oil<CR>')
+vim.keymap.set("n", "<leader>pv", "<Cmd>Oil<CR>")
 
 -- copy and paste
-vim.keymap.set('', '<leader>y', '"*y', { desc = 'yank to clipboard' })
-vim.keymap.set('', '<leader>Y', '"*Y', { desc = 'yank until EOL to clipboard' })
+vim.keymap.set("", "<leader>y", '"*y', { desc = "yank to clipboard" })
+vim.keymap.set("", "<leader>Y", '"*Y', { desc = "yank until EOL to clipboard" })
 
-vim.keymap.set('n', '<leader>p', '"*p', { desc = 'paste after cursor from clipboard' })
-vim.keymap.set('n', '<leader>P', '"*P', { desc = 'paste before cursor from clipboard' })
+vim.keymap.set("n", "<leader>p", '"*p', { desc = "paste after cursor from clipboard" })
+vim.keymap.set("n", "<leader>P", '"*P', { desc = "paste before cursor from clipboard" })
 
 -- jump highighted text (visual mode) up and down
 vim.keymap.set("v", "J", ":m '>+1<CR>gv=gv")
@@ -36,7 +36,8 @@ vim.keymap.set("x", "<leader>p", [["_dP]])
 vim.keymap.set({ "n", "v" }, "<leader>y", [["+y]])
 vim.keymap.set("n", "<leader>Y", [["+Y]])
 
-vim.keymap.set({ "n", "v" }, "<leader>d", [["_d]])
+-- deletes the text into the blackhole register (doesn't overwrite your current clipboard
+-- vim.keymap.set({ "n", "v" }, "<leader>d", [["_d]])
 
 vim.keymap.set("n", "Q", "<nop>")
 vim.keymap.set("n", "<C-f>", "<cmd>silent !tmux neww tmux-sessionizer<CR>")

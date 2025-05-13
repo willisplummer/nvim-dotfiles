@@ -1,1 +1,1 @@
-require("willis")
+require("config.lazy")
