@@ -4,7 +4,8 @@ return {
 		-- event = "VeryLazy", -- Use an appropriate event, like "VeryLazy"
 		cond = function()
 			-- Only load mason.nvim if running on macOS
-			return vim.fn.has("macunix") == 1
+			-- return vim.fn.has("macunix") == 1
+			return 1
 		end,
 		dependencies = {
 			{ "williamboman/mason-lspconfig.nvim" },
@@ -18,9 +19,9 @@ return {
 				handlers = {
 					function(server_name)
 						-- Setup individual LSP server configurations here
-						require('lspconfig')[server_name].setup({})
+						require("lspconfig")[server_name].setup({})
 					end,
-				}
+				},
 			})
 		end,
 	},
@@ -69,7 +70,7 @@ return {
 			-- Add cmp_nvim_lsp capabilities settings to lspconfig
 			-- This should be executed before you configure any language server
 			lsp_defaults.capabilities =
-					vim.tbl_deep_extend("force", lsp_defaults.capabilities, require("cmp_nvim_lsp").default_capabilities())
+				vim.tbl_deep_extend("force", lsp_defaults.capabilities, require("cmp_nvim_lsp").default_capabilities())
 
 			-- LSPAttach is where you enable features that onl workk
 			-- if there is a language server active in the file
