@@ -106,31 +106,18 @@ return {
 					},
 				},
 			})
-
-			-- Set custom icons for LSP diagnostics
-			vim.fn.sign_define(
-				"DiagnosticSignError",
-				{ text = "", texthl = "DiagnosticSignError", numhl = "DiagnosticSignError" }
-			)
-			vim.fn.sign_define(
-				"DiagnosticSignWarn",
-				{ text = "", texthl = "DiagnosticSignWarn", numhl = "DiagnosticSignWarn" }
-			)
-			vim.fn.sign_define(
-				"DiagnosticSignHint",
-				{ text = "", texthl = "DiagnosticSignHint", numhl = "DiagnosticSignHint" }
-			)
-			vim.fn.sign_define(
-				"DiagnosticSignInfo",
-				{ text = "", texthl = "DiagnosticSignInfo", numhl = "DiagnosticSignInfo" }
-			)
-
-			-- Set custom LSP diagnostic icons
 			vim.diagnostic.config({
-				virtual_text = {
-					prefix = "●", -- You can change this to something else like '▶', '✪', etc.
+				signs = {
+					text = {
+						[vim.diagnostic.severity.ERROR] = "",
+						[vim.diagnostic.severity.WARN] = "",
+						[vim.diagnostic.severity.HINT] = "",
+						[vim.diagnostic.severity.INFO] = "",
+					},
 				},
-				signs = true,
+				virtual_text = {
+					prefix = "●",
+				},
 				update_in_insert = false,
 				underline = true,
 				severity_sort = true,
