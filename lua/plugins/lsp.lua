@@ -15,23 +15,11 @@ return {
 			require("mason-lspconfig").setup({
 				ensure_installed = { "pyright", "ts_ls", "eslint", "lua_ls" },
 				automatic_installation = true,
-				automatic_enable = true,
+				automatic_enable = false,
 				handlers = {
 					function(server_name)
 						-- Setup individual LSP server configurations here
 						require("lspconfig")[server_name].setup({})
-					end,
-
-					["eslint"] = function()
-						require("lspconfig").eslint.setup({
-							settings = {
-								eslint = {
-									options = {
-										resolvePluginsRelativeTo = vim.fn.getcwd(),
-									},
-								},
-							},
-						})
 					end,
 				},
 			})
@@ -108,6 +96,7 @@ return {
 			-- Setup language servers
 			local lspconfig = require("lspconfig")
 			lspconfig.ts_ls.setup({})
+			lspconfig.eslint.setup({})
 			lspconfig.lua_ls.setup({})
 			lspconfig.ccls.setup({})
 			lspconfig.zls.setup({
