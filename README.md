@@ -1,6 +1,10 @@
 # NVIM DOTFILES
+I moved these to their own repo because I'm managing the rest of my config in home-manager
 
-- I moved these to their own repo because I'm managing the rest of my config in home-manager
+## Setup
+clone the repo to ~/nvim and cd into the directory
+`cp .env.example .env`
+set any environment variables
 
 ## Improvements To Do
 - snippets/completions -- the keybindings are weird/i don't know how they work. (haven't figured out how to accept a snippet)

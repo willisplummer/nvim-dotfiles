@@ -1,6 +1,10 @@
 return {
 	{
 		"mfussenegger/nvim-dap",
+		cond = function()
+			local enable = os.getenv("ENABLE_DEBUGGER")
+			return enable == "true"
+		end,
 		dependencies = {
 			"rcarriga/nvim-dap-ui",
 			"theHamsta/nvim-dap-virtual-text",

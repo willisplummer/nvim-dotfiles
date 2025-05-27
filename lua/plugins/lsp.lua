@@ -3,8 +3,8 @@ return {
 		"williamboman/mason.nvim", -- Mason for LSP management
 		-- event = "VeryLazy", -- Use an appropriate event, like "VeryLazy"
 		cond = function()
-			-- Only load mason.nvim if running on macOS
-			return vim.fn.has("macunix") == 1
+			local enable_mason = os.getenv("ENABLE_MASON")
+			return enable_mason == "true"
 		end,
 		dependencies = {
 			{ "williamboman/mason-lspconfig.nvim" },
@@ -12,15 +12,15 @@ return {
 		config = function()
 			require("mason").setup()
 			require("mason-lspconfig").setup({
-				ensure_installed = { "pyright", "ts_ls" }, -- Example LSPs to install
+				ensure_installed = { "pyright", "ts_ls", "eslint", "lua_ls" }, -- Example LSPs to install
 				automatic_installation = true,
 				automatic_enable = false,
 				handlers = {
 					function(server_name)
 						-- Setup individual LSP server configurations here
-						require('lspconfig')[server_name].setup({})
+						require("lspconfig")[server_name].setup({})
 					end,
-				}
+				},
 			})
 		end,
 	},
@@ -69,7 +69,7 @@ return {
 			-- Add cmp_nvim_lsp capabilities settings to lspconfig
 			-- This should be executed before you configure any language server
 			lsp_defaults.capabilities =
-					vim.tbl_deep_extend("force", lsp_defaults.capabilities, require("cmp_nvim_lsp").default_capabilities())
+				vim.tbl_deep_extend("force", lsp_defaults.capabilities, require("cmp_nvim_lsp").default_capabilities())
 
 			-- LSPAttach is where you enable features that onl workk
 			-- if there is a language server active in the file
@@ -95,7 +95,9 @@ return {
 			-- Setup language servers
 			local lspconfig = require("lspconfig")
 			lspconfig.ts_ls.setup({})
+			lspconfig.pywright.setup({})
 			lspconfig.lua_ls.setup({})
+			lspconfig.eslint.setup({})
 			lspconfig.ccls.setup({})
 			lspconfig.zls.setup({
 				settings = {
@@ -106,30 +108,18 @@ return {
 				},
 			})
 
-			-- Set custom icons for LSP diagnostics
-			vim.fn.sign_define(
-				"DiagnosticSignError",
-				{ text = "", texthl = "DiagnosticSignError", numhl = "DiagnosticSignError" }
-			)
-			vim.fn.sign_define(
-				"DiagnosticSignWarn",
-				{ text = "", texthl = "DiagnosticSignWarn", numhl = "DiagnosticSignWarn" }
-			)
-			vim.fn.sign_define(
-				"DiagnosticSignHint",
-				{ text = "", texthl = "DiagnosticSignHint", numhl = "DiagnosticSignHint" }
-			)
-			vim.fn.sign_define(
-				"DiagnosticSignInfo",
-				{ text = "", texthl = "DiagnosticSignInfo", numhl = "DiagnosticSignInfo" }
-			)
-
-			-- Set custom LSP diagnostic icons
 			vim.diagnostic.config({
-				virtual_text = {
-					prefix = "●", -- You can change this to something else like '▶', '✪', etc.
+				signs = {
+					text = {
+						[vim.diagnostic.severity.ERROR] = "",
+						[vim.diagnostic.severity.WARN] = "",
+						[vim.diagnostic.severity.HINT] = "",
+						[vim.diagnostic.severity.INFO] = "",
+					},
 				},
-				signs = true,
+				virtual_text = {
+					prefix = "●",
+				},
 				update_in_insert = false,
 				underline = true,
 				severity_sort = true,
