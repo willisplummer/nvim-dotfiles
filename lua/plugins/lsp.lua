@@ -92,11 +92,28 @@ return {
 					vim.keymap.set("n", "<leader>ef", "<cmd>EslintFixAll<cr>", opts)
 				end,
 			})
+			local function get_python_path()
+				local cwd = vim.fn.getcwd()
+
+				if vim.fn.executable(cwd .. "/venv/bin/python") == 1 then
+					return cwd .. "/venv/bin/python"
+				elseif vim.fn.executable(cwd .. "/.venv/bin/python") == 1 then
+					return cwd .. "/.venv/bin/python"
+				end
+
+				return vim.fn.exepath("python3") or "python"
+			end
 
 			-- Setup language servers
 			local lspconfig = require("lspconfig")
 			lspconfig.ts_ls.setup({})
-			lspconfig.pyright.setup({})
+			lspconfig.pyright.setup({
+				settings = {
+					python = {
+						pythonPath = get_python_path(),
+					},
+				},
+			})
 			lspconfig.lua_ls.setup({})
 			lspconfig.eslint.setup({})
 			lspconfig.ccls.setup({})
