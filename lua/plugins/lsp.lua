@@ -96,7 +96,7 @@ return {
 			-- Setup language servers
 			local lspconfig = require("lspconfig")
 			lspconfig.ts_ls.setup({})
-			lspconfig.pywright.setup({})
+			lspconfig.pyright.setup({})
 			lspconfig.lua_ls.setup({})
 			lspconfig.eslint.setup({})
 			lspconfig.ccls.setup({})
