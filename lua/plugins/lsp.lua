@@ -92,17 +92,6 @@ return {
 					vim.keymap.set("n", "<leader>ef", "<cmd>EslintFixAll<cr>", opts)
 				end,
 			})
-			local function get_python_path()
-				local cwd = vim.fn.getcwd()
-
-				if vim.fn.executable(cwd .. "/venv/bin/python") == 1 then
-					return cwd .. "/venv/bin/python"
-				elseif vim.fn.executable(cwd .. "/.venv/bin/python") == 1 then
-					return cwd .. "/.venv/bin/python"
-				end
-
-				return vim.fn.exepath("python3") or "python"
-			end
 
 			-- Setup language servers
 			local lspconfig = require("lspconfig")
@@ -112,7 +101,13 @@ return {
 					pylsp = {
 						configurationSources = { "mypy" },
 						plugins = {
-							pylsp_mypy = { enabled = true, dmypy = true },
+							black = { enabled = true },
+							rope = { enabled = true },
+							ruff = { enabled = true },
+							pylsp_mypy = { enabled = true, dmypy = true, report_progress = true },
+							pyflakes = { enabled = false },
+							pycodestyle = { enabled = false },
+							mccabe = { enabled = false },
 						},
 					},
 				},
@@ -123,14 +118,6 @@ return {
 					return util.root_pattern(unpack(root_files))(fname) or util.find_git_ancestor(fname)
 				end,
 			})
-
-			-- lspconfig.pyright.setup({
-			-- 	settings = {
-			-- 		python = {
-			-- 			pythonPath = get_python_path(),
-			-- 		},
-			-- 	},
-			-- })
 			lspconfig.lua_ls.setup({})
 			lspconfig.eslint.setup({})
 			lspconfig.ccls.setup({})
