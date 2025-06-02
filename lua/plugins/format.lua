@@ -12,6 +12,7 @@ return {
 				typescript = { "prettierd", "prettier", stop_after_first = true },
 				javascriptreact = { "prettierd", "prettier", stop_after_first = true },
 				typescriptreact = { "prettierd", "prettier", stop_after_first = true },
+				python = { "isort", "black" },
 				nix = { "nixfmt", stop_after_first = true },
 				zig = { "zigfmt", stop_after_first = true },
 				-- Use the "*" filetype to run formatters on all filetypes.
@@ -30,7 +31,6 @@ return {
 				end
 				return { timeout_ms = 500, lsp_format = "fallback" }
 			end,
-
 		},
 		config = function(_, opts)
 			local conform = require("conform")
@@ -53,7 +53,6 @@ return {
 			end, {
 				desc = "Re-enable autoformat-on-save",
 			})
-
 
 			vim.keymap.set("n", "<leader>f", function()
 				conform.format({ async = true })

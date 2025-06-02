@@ -12,7 +12,7 @@ return {
 		config = function()
 			require("mason").setup()
 			require("mason-lspconfig").setup({
-				ensure_installed = { "pyright", "ts_ls", "eslint", "lua_ls" }, -- Example LSPs to install
+				ensure_installed = { "pylsp", "ts_ls", "eslint", "lua_ls" },
 				automatic_installation = true,
 				automatic_enable = false,
 				handlers = {
@@ -106,14 +106,39 @@ return {
 
 			-- Setup language servers
 			local lspconfig = require("lspconfig")
+			local util = require("lspconfig.util")
 			lspconfig.ts_ls.setup({})
-			lspconfig.pyright.setup({
+			lspconfig.pylsp.setup({
 				settings = {
-					python = {
-						pythonPath = get_python_path(),
+					pylsp = {
+						configurationSources = { "mypy" },
+						plugins = {
+							pycodestyle = { enabled = false },
+							pyflakes = { enabled = false },
+							mccabe = { enabled = false },
+
+							pylsp_mypy = { enabled = true, dmypy = true },
+							black = { enabled = true },
+							rope = { enabled = true },
+							ruff = { enabled = true },
+						},
 					},
 				},
+				root_dir = function(fname)
+					local root_files = {
+						"requirements.txt",
+					}
+					return util.root_pattern(unpack(root_files))(fname) or util.find_git_ancestor(fname)
+				end,
 			})
+
+			-- lspconfig.pyright.setup({
+			-- 	settings = {
+			-- 		python = {
+			-- 			pythonPath = get_python_path(),
+			-- 		},
+			-- 	},
+			-- })
 			lspconfig.lua_ls.setup({})
 			lspconfig.eslint.setup({})
 			lspconfig.ccls.setup({})
