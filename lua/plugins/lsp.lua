@@ -96,6 +96,7 @@ return {
 			-- Setup language servers
 			local lspconfig = require("lspconfig")
 			local util = require("lspconfig.util")
+			lspconfig.pyright.setup({})
 			lspconfig.pylsp.setup({
 				settings = {
 					pylsp = {
@@ -104,7 +105,7 @@ return {
 							black = { enabled = true },
 							rope = { enabled = true },
 							ruff = { enabled = true },
-							pylsp_mypy = { enabled = true, dmypy = true },
+							pylsp_mypy = { enabled = true, live_mode = true, dmypy = false },
 							pyls_isort = { enabled = true },
 							pyflakes = { enabled = false },
 							pycodestyle = { enabled = false },
