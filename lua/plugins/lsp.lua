@@ -104,12 +104,16 @@ return {
 							black = { enabled = true },
 							rope = { enabled = true },
 							ruff = { enabled = true },
-							pylsp_mypy = { enabled = true, dmypy = true, report_progress = true },
+							pylsp_mypy = { enabled = true, dmypy = true },
+							pyls_isort = { enabled = true },
 							pyflakes = { enabled = false },
 							pycodestyle = { enabled = false },
 							mccabe = { enabled = false },
 						},
 					},
+				},
+				flags = {
+					debounce_text_changes = 200,
 				},
 				root_dir = function(fname)
 					local root_files = {

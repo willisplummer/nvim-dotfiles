@@ -3,6 +3,12 @@ return {
 		"stevearc/conform.nvim",
 		opts = {
 			-- Map of filetype to formatters
+			default_format_opts = {
+				timeout_ms = 5000,
+				async = false,
+				quiet = false,
+				lsp_format = "fallback",
+			},
 			formatters_by_ft = {
 				lua = { "stylua" },
 				-- Conform will run multiple formatters sequentially
