@@ -133,6 +133,7 @@ return {
 			})
 			lspconfig.lua_ls.setup({})
 			lspconfig.eslint.setup({})
+			lspconfig.ts_ls.setup({})
 			lspconfig.ccls.setup({})
 			lspconfig.zls.setup({
 				settings = {
