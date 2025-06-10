@@ -12,6 +12,7 @@ return {
 		config = function()
 			require("mason").setup()
 			require("mason-lspconfig").setup({
+				-- NOTE: consider vtsls instead of ts_ls
 				ensure_installed = { "ts_ls", "eslint", "lua_ls" },
 				automatic_installation = true,
 				automatic_enable = false,
