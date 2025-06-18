@@ -97,7 +97,13 @@ return {
 			-- Setup language servers
 			local lspconfig = require("lspconfig")
 			local util = require("lspconfig.util")
-			-- lspconfig.pyright.setup({})
+			lspconfig.pyright.setup({
+				settings = {
+					python = {
+						pythonPath = "/home/dev/patreon_py/venv/bin/python",
+					},
+				},
+			})
 			lspconfig.pylsp.setup({
 				settings = {
 					pylsp = {
