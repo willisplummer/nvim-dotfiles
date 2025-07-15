@@ -139,7 +139,13 @@ return {
 				end,
 			})
 			lspconfig.lua_ls.setup({})
-			lspconfig.eslint.setup({})
+			lspconfig.eslint.setup({
+				root_dir = require("lspconfig.util").root_pattern(".eslintrc.js", "package.json"),
+				workingDirectory = { mode = "location" }, -- safer than \"auto\" for plugin resolution
+				settings = {
+					nodePath = vim.fn.getcwd() .. "/node_modules",
+				},
+			})
 			lspconfig.ts_ls.setup({})
 			lspconfig.ccls.setup({})
 			lspconfig.zls.setup({
