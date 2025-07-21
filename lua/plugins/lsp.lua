@@ -13,7 +13,7 @@ return {
 			require("mason").setup()
 			require("mason-lspconfig").setup({
 				-- NOTE: consider vtsls instead of ts_ls
-				ensure_installed = { "ts_ls", "eslint", "lua_ls" },
+				ensure_installed = { "ts_ls", "eslint", "lua_ls", "biome" },
 				automatic_installation = true,
 				automatic_enable = false,
 				handlers = {
@@ -139,6 +139,13 @@ return {
 				end,
 			})
 			lspconfig.lua_ls.setup({})
+			lspconfig.biome.setup({
+				root_dir = require("lspconfig.util").root_pattern("biome.json", ".git"),
+				workingDirectory = { mode = "location" }, -- safer than \"auto\" for plugin resolution
+				settings = {
+					nodePath = vim.fn.getcwd() .. "/node_modules",
+				},
+			})
 			lspconfig.eslint.setup({
 				root_dir = require("lspconfig.util").root_pattern(".eslintrc.js", "package.json"),
 				workingDirectory = { mode = "location" }, -- safer than \"auto\" for plugin resolution
