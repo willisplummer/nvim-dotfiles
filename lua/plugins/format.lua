@@ -13,10 +13,10 @@ return {
 				lua = { "stylua" },
 				-- Conform will run multiple formatters sequentially
 				-- Use a sub-list to run only the first available formatter
-				javascript = { "prettierd", "prettier", stop_after_first = true },
-				typescript = { "prettierd", "prettier", stop_after_first = true },
-				javascriptreact = { "prettierd", "prettier", stop_after_first = true },
-				typescriptreact = { "prettierd", "prettier", stop_after_first = true },
+				javascript = { "biome", "prettierd", "prettier", stop_after_first = true },
+				typescript = { "biome", "prettierd", "prettier", stop_after_first = true },
+				javascriptreact = { "biome", "prettierd", "prettier", stop_after_first = true },
+				typescriptreact = { "biome", "prettierd", "prettier", stop_after_first = true },
 				python = { "isort", "black" },
 				nix = { "nixfmt", stop_after_first = true },
 				zig = { "zigfmt", stop_after_first = true },
