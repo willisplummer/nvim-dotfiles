@@ -144,6 +144,10 @@ return {
 				root_dir = require("lspconfig.util").root_pattern("package.json", ".git"),
 				workingDirectory = { mode = "location" }, -- safer than \"auto\" for plugin resolution
 				settings = {
+					stylelintplus = {
+						autoFixOnFormat = true, -- Automatically apply fixes on format requests
+						autoFixOnSave = false, -- Automatically apply fixes on save (consider implications with other formatters)
+					},
 					nodePath = vim.fn.getcwd() .. "/node_modules",
 				},
 			})
@@ -158,6 +162,7 @@ return {
 				root_dir = require("lspconfig.util").root_pattern(".eslintrc.js", "package.json"),
 				workingDirectory = { mode = "location" }, -- safer than \"auto\" for plugin resolution
 				settings = {
+					autoFixOnSave = true,
 					nodePath = vim.fn.getcwd() .. "/node_modules",
 				},
 			})
