@@ -17,6 +17,7 @@ return {
 				typescript = { "biome", "prettierd", "prettier", stop_after_first = true },
 				javascriptreact = { "biome", "prettierd", "prettier", stop_after_first = true },
 				typescriptreact = { "biome", "prettierd", "prettier", stop_after_first = true },
+				css = { "styleint" },
 				python = { "isort", "black" },
 				nix = { "nixfmt", stop_after_first = true },
 				zig = { "zigfmt", stop_after_first = true },
