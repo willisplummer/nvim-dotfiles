@@ -18,10 +18,10 @@ return {
 			},
 			files = {
 				fd_opts = "--color=never --type f --hidden --follow --exclude .git",
-				rg_opts = "--color=never --files --hidden --follow -g '!.git' -g '*.env'",
+				rg_opts = "--color=never --files --hidden --follow -g '!.git' -g '!*.env'",
 			},
 			grep = {
-				rg_opts = "--column --line-number --no-heading --color=always --smart-case --hidden -g '!.git' -g '*.env' --max-columns=512",
+				rg_opts = "--column --line-number --no-heading --color=always --smart-case --hidden -g '!.git' -g '!*.env' --max-columns=512",
 			},
 		})
 
