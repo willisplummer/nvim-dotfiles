@@ -6,7 +6,7 @@ return {
 			plugins = {
 				spelling = { enabled = true },
 			},
-			window = {
+			win = {
 				border = "rounded",
 			},
 			layout = {
