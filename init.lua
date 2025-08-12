@@ -1,3 +1,6 @@
+vim.opt.timeout = true 
+vim.opt.timeoutlen = 300
+
 local function load_env_file(path)
 	local file = io.open(path, "r")
 	if not file then
