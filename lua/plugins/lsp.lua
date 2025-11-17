@@ -19,7 +19,7 @@ return {
 				handlers = {
 					function(server_name)
 						-- Setup individual LSP server configurations here
-						require("lspconfig")[server_name].setup({})
+						vim.lsp.enable(server_name)
 					end,
 				},
 			})
@@ -65,12 +65,13 @@ return {
 			vim.g.zig_fmt_autosave = 0
 		end,
 		config = function()
-			local lsp_defaults = require("lspconfig").util.default_config
-
-			-- Add cmp_nvim_lsp capabilities settings to lspconfig
+			-- Add cmp_nvim_lsp capabilities settings to default config
 			-- This should be executed before you configure any language server
-			lsp_defaults.capabilities =
-				vim.tbl_deep_extend("force", lsp_defaults.capabilities, require("cmp_nvim_lsp").default_capabilities())
+			local capabilities = vim.tbl_deep_extend(
+				"force",
+				vim.lsp.protocol.make_client_capabilities(),
+				require("cmp_nvim_lsp").default_capabilities()
+			)
 
 			-- LSPAttach is where you enable features that onl workk
 			-- if there is a language server active in the file
@@ -94,17 +95,24 @@ return {
 				end,
 			})
 
-			-- Setup language servers
-			local lspconfig = require("lspconfig")
-			local util = require("lspconfig.util")
-			lspconfig.pyright.setup({
+			-- Setup language servers using the new vim.lsp.config API
+			vim.lsp.config.pyright = {
+				cmd = { "pyright-langserver", "--stdio" },
+				filetypes = { "python" },
+				root_markers = { "pyproject.toml", "setup.py", "requirements.txt", ".git" },
+				capabilities = capabilities,
 				settings = {
 					python = {
 						pythonPath = "/home/dev/patreon_py/venv/bin/python",
 					},
 				},
-			})
-			lspconfig.pylsp.setup({
+			}
+
+			vim.lsp.config.pylsp = {
+				cmd = { "pylsp" },
+				filetypes = { "python" },
+				root_markers = { "requirements.txt", ".git" },
+				capabilities = capabilities,
 				settings = {
 					pylsp = {
 						configurationSources = { "mypy" },
@@ -131,51 +139,87 @@ return {
 				flags = {
 					debounce_text_changes = 200,
 				},
-				root_dir = function(fname)
-					local root_files = {
-						"requirements.txt",
-					}
-					return util.root_pattern(unpack(root_files))(fname) or util.find_git_ancestor(fname)
-				end,
-			})
-			lspconfig.lua_ls.setup({})
-			lspconfig.stylelint_lsp.setup({
+			}
+
+			vim.lsp.config.lua_ls = {
+				cmd = { "lua-language-server" },
+				filetypes = { "lua" },
+				root_markers = { ".luarc.json", ".luarc.jsonc", ".luacheckrc", ".stylua.toml", "stylua.toml", ".git" },
+				capabilities = capabilities,
+			}
+
+			vim.lsp.config.stylelint_lsp = {
+				cmd = { "stylelint-lsp", "--stdio" },
 				filetypes = { "css", "scss" },
-				root_dir = require("lspconfig.util").root_pattern("package.json", ".git"),
-				workingDirectory = { mode = "location" }, -- safer than \"auto\" for plugin resolution
+				root_markers = { "package.json", ".git" },
+				capabilities = capabilities,
 				settings = {
 					stylelintplus = {
-						autoFixOnFormat = true, -- Automatically apply fixes on format requests
-						autoFixOnSave = false, -- Automatically apply fixes on save (consider implications with other formatters)
+						autoFixOnFormat = true,
+						autoFixOnSave = false,
 					},
 					nodePath = vim.fn.getcwd() .. "/node_modules",
 				},
-			})
-			lspconfig.biome.setup({
-				root_dir = require("lspconfig.util").root_pattern("biome.json", ".git"),
-				workingDirectory = { mode = "location" }, -- safer than \"auto\" for plugin resolution
+			}
+
+			vim.lsp.config.biome = {
+				cmd = { "biome", "lsp-proxy" },
+				filetypes = { "javascript", "javascriptreact", "json", "jsonc", "typescript", "typescript.tsx", "typescriptreact" },
+				root_markers = { "biome.json", ".git" },
+				capabilities = capabilities,
 				settings = {
 					nodePath = vim.fn.getcwd() .. "/node_modules",
 				},
-			})
-			lspconfig.eslint.setup({
-				root_dir = require("lspconfig.util").root_pattern(".eslintrc.js", "package.json"),
-				workingDirectory = { mode = "location" }, -- safer than \"auto\" for plugin resolution
+			}
+
+			vim.lsp.config.eslint = {
+				cmd = { "vscode-eslint-language-server", "--stdio" },
+				filetypes = { "javascript", "javascriptreact", "typescript", "typescriptreact", "vue", "svelte", "astro" },
+				root_markers = { ".eslintrc.js", "package.json", ".git" },
+				capabilities = capabilities,
 				settings = {
 					autoFixOnSave = true,
 					nodePath = vim.fn.getcwd() .. "/node_modules",
 				},
-			})
-			lspconfig.ts_ls.setup({})
-			lspconfig.ccls.setup({})
-			lspconfig.zls.setup({
+			}
+
+			vim.lsp.config.ts_ls = {
+				cmd = { "typescript-language-server", "--stdio" },
+				filetypes = { "javascript", "javascriptreact", "typescript", "typescriptreact" },
+				root_markers = { "package.json", "tsconfig.json", "jsconfig.json", ".git" },
+				capabilities = capabilities,
+			}
+
+			vim.lsp.config.ccls = {
+				cmd = { "ccls" },
+				filetypes = { "c", "cpp", "objc", "objcpp", "cuda" },
+				root_markers = { "compile_commands.json", ".ccls", ".git" },
+				capabilities = capabilities,
+			}
+
+			vim.lsp.config.zls = {
+				cmd = { "zls" },
+				filetypes = { "zig", "zir" },
+				root_markers = { "zls.json", "build.zig", ".git" },
+				capabilities = capabilities,
 				settings = {
 					zls = {
 						enable_build_on_save = true,
 						build_on_save_step = "check",
 					},
 				},
-			})
+			}
+
+			-- Enable the configured LSP servers
+			vim.lsp.enable("pyright")
+			vim.lsp.enable("pylsp")
+			vim.lsp.enable("lua_ls")
+			vim.lsp.enable("stylelint_lsp")
+			vim.lsp.enable("biome")
+			vim.lsp.enable("eslint")
+			vim.lsp.enable("ts_ls")
+			vim.lsp.enable("ccls")
+			vim.lsp.enable("zls")
 
 			vim.diagnostic.config({
 				signs = {
