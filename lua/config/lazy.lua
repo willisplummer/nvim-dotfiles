@@ -20,6 +20,7 @@ vim.opt.rtp:prepend(lazypath)
 -- This is also a good place to setup other settings (vim.opt)
 require("config.remap")
 require("config.set")
+require("config.treesitter")
 
 -- Setup lazy.nvim
 require("lazy").setup({
