@@ -32,6 +32,14 @@ require("lazy").setup({
 		enabled = false,
 		hererocks = false,
 	},
+	-- Keep Nix-provided plugins (nvim-treesitter + grammars from
+	-- programs.neovim.plugins) on runtimepath; lazy resets it by default,
+	-- which would strip them and force lazy's own (broken) treesitter copy.
+	performance = {
+		rtp = {
+			reset = false,
+		},
+	},
 	-- Configure any other settings here. See the documentation for more details.
 	-- colorscheme that will be used when installing plugins.
 	install = { colorscheme = { "tokyonight" } },
