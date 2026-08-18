@@ -1,5 +1,20 @@
 local conform = require("conform")
 
+-- In a biome project (prf), `biome format` handles layout and
+-- `biome check --write` with only assists enabled handles import ordering --
+-- biome reports unsorted imports as `assist/source/organizeImports`, which the
+-- plain formatter does not touch. Two passes rather than `biome check --write`
+-- so that saving never applies lint fixes (deleting an import you are halfway
+-- through typing, say); `:LintFix` is the opt-in for those.
+-- Anything else falls back to prettier.
+local function js_formatters(bufnr)
+	if vim.fs.root(bufnr, { "biome.json", "biome.jsonc" }) then
+		return { "biome", "biome-organize-imports" }
+	end
+
+	return { "prettierd", "prettier", stop_after_first = true }
+end
+
 conform.setup({
 	-- Map of filetype to formatters
 	default_format_opts = {
@@ -12,11 +27,13 @@ conform.setup({
 		lua = { "stylua" },
 		-- Conform will run multiple formatters sequentially
 		-- Use a sub-list to run only the first available formatter
-		javascript = { "biome", "prettierd", "prettier", stop_after_first = true },
-		typescript = { "biome", "prettierd", "prettier", stop_after_first = true },
-		javascriptreact = { "biome", "prettierd", "prettier", stop_after_first = true },
-		typescriptreact = { "biome", "prettierd", "prettier", stop_after_first = true },
-		css = { "styleint" },
+		javascript = js_formatters,
+		typescript = js_formatters,
+		javascriptreact = js_formatters,
+		typescriptreact = js_formatters,
+		-- `stylelint --fix` first (it owns property ordering), then biome for
+		-- layout. This used to read `styleint`, which conform silently skipped.
+		css = { "stylelint", "biome" },
 		python = { "isort", "black" },
 		nix = { "nixfmt", stop_after_first = true },
 		zig = { "zigfmt", stop_after_first = true },
@@ -56,6 +73,24 @@ vim.api.nvim_create_user_command("FormatEnable", function()
 	vim.g.disable_autoformat = false
 end, {
 	desc = "Re-enable autoformat-on-save",
+})
+
+vim.api.nvim_create_user_command("Format", function(args)
+	local range = nil
+
+	-- `:'<,'>Format` formats just the selection.
+	if args.count ~= -1 then
+		local end_line = vim.api.nvim_buf_get_lines(0, args.line2 - 1, args.line2, true)[1]
+		range = {
+			start = { args.line1, 0 },
+			["end"] = { args.line2, end_line:len() },
+		}
+	end
+
+	conform.format({ async = true, lsp_format = "fallback", range = range })
+end, {
+	desc = "Format the current buffer (or selection)",
+	range = true,
 })
 
 vim.keymap.set("n", "<leader>f", function()

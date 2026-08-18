@@ -32,6 +32,7 @@ vim.api.nvim_create_autocmd("LspAttach", {
 		vim.keymap.set({ "n", "x" }, "<F3>", "<cmd>lua vim.lsp.buf.format({async = true})<cr>", opts)
 		vim.keymap.set("n", "<F4>", "<cmd>lua vim.lsp.buf.code_action()<cr>", opts)
 		vim.keymap.set("n", "<leader>ef", "<cmd>EslintFixAll<cr>", opts)
+		vim.keymap.set("n", "<leader>lf", "<cmd>LintFix<cr>", opts)
 	end,
 })
 
@@ -88,47 +89,82 @@ vim.lsp.config.lua_ls = {
 	capabilities = capabilities,
 }
 
+-- `stylelint-lsp` comes from nix (~/nix/nvim.nix) and loads the *project's*
+-- stylelint out of node_modules, so prf's plugins (studio token validation,
+-- alphabetical property order) report here too.
+--
+-- Note on the missing `filetypes`/`root_markers`: `vim.lsp.config` deep-merges
+-- our table over nvim-lspconfig's `lsp/<name>.lua`, and deep-merging *lists*
+-- happens index by index -- `{ "css", "scss" }` over lspconfig's six filetypes
+-- left a mangled list rather than replacing it. lspconfig's defaults are what
+-- we want anyway: it only starts a server in projects that have its config file
+-- (`.stylelintrc.js` for prf), which keeps it quiet everywhere else.
 vim.lsp.config.stylelint_lsp = {
 	cmd = { "stylelint-lsp", "--stdio" },
-	filetypes = { "css", "scss" },
-	root_markers = { "package.json", ".git" },
 	capabilities = capabilities,
 	settings = {
 		stylelintplus = {
 			autoFixOnFormat = true,
 			autoFixOnSave = false,
 		},
-		nodePath = vim.fn.getcwd() .. "/node_modules",
 	},
 }
 
+-- Biome owns formatting, import ordering (`assist/source/organizeImports`) and
+-- roughly half of prf's lint rules; oxlint (below) owns the other half.
+--
+-- Everything but `capabilities` is deliberately left to nvim-lspconfig:
+--   * its `cmd` prefers `<root>/node_modules/.bin/biome`, so the editor runs the
+--     version the repo pins (2.5.8 in prf) instead of whatever nix installed
+--   * its `root_dir` knows about `biome.jsonc` and monorepos; our old
+--     `root_markers = { "biome.json", ".git" }` only matched prf via `.git`
 vim.lsp.config.biome = {
-	cmd = { "biome", "lsp-proxy" },
-	filetypes = {
-		"javascript",
-		"javascriptreact",
-		"json",
-		"jsonc",
-		"typescript",
-		"typescript.tsx",
-		"typescriptreact",
-	},
-	root_markers = { "biome.json", ".git" },
 	capabilities = capabilities,
-	settings = {
-		nodePath = vim.fn.getcwd() .. "/node_modules",
-	},
 }
 
-vim.lsp.config.eslint = {
-	cmd = { "vscode-eslint-language-server", "--stdio" },
-	filetypes = { "javascript", "javascriptreact", "typescript", "typescriptreact", "vue", "svelte", "astro" },
-	root_markers = { ".eslintrc.js", "package.json", ".git" },
+-- oxlint is prf's ESLint replacement, and the reason a chunk of lint errors were
+-- invisible in here: nothing was running it. lspconfig's `cmd` prefers
+-- `<root>/node_modules/.bin/oxlint --lsp`, matching the version CI and
+-- pre-commit use.
+vim.lsp.config.oxlint = {
 	capabilities = capabilities,
 	settings = {
-		autoFixOnSave = true,
-		nodePath = vim.fn.getcwd() .. "/node_modules",
+		-- Type-aware rules shell out to tsgolint and cost ~2s per run on prf, so
+		-- lint on write instead of on every keystroke. Flip to "onType" if you
+		-- would rather have the latency than the delay.
+		run = "onSave",
+		typeAware = true,
+		-- Matches `oxc.fixKind` in prf's .vscode/settings.json.
+		fixKind = "all",
 	},
+	on_init = function(client)
+		local settings = vim.deepcopy(client.settings or {})
+
+		-- prf runs oxlint twice, with two configs: native rules (.oxlintrc.jsonc,
+		-- which oxlint finds on its own) and JS-plugin rules
+		-- (.oxlintrc.js-plugins.jsonc -- local-rules, testing-library, storybook,
+		-- css-modules). A language server only reads one config, so the repo ships
+		-- `.oxlintrc.editor.jsonc`, which extends both. Without pointing at it we
+		-- silently lose every `local-rules/*` and `css-modules/*` error.
+		local editor_config = ".oxlintrc.editor.jsonc"
+		if client.root_dir and vim.uv.fs_stat(vim.fs.joinpath(client.root_dir, editor_config)) then
+			settings.configPath = editor_config
+		end
+
+		-- Why this is sent by hand rather than left to `settings` alone: oxlint
+		-- 1.78 only reads its options out of `workspace/didChangeConfiguration`,
+		-- and the notification nvim sends automatically (from `settings`, just
+		-- before this callback) cannot carry a per-project `configPath`. Sending
+		-- the complete set here overrides that one.
+		client:notify("workspace/didChangeConfiguration", { settings = settings })
+	end,
+}
+
+-- prf has finished deleting its eslint config, so this now only starts in the
+-- repos that still have one. The old `root_markers` matched any `package.json`,
+-- which meant an eslint server attaching to prf files with nothing to lint.
+vim.lsp.config.eslint = {
+	capabilities = capabilities,
 }
 
 vim.lsp.config.ts_ls = {
@@ -164,6 +200,7 @@ vim.lsp.enable("pylsp")
 vim.lsp.enable("lua_ls")
 vim.lsp.enable("stylelint_lsp")
 vim.lsp.enable("biome")
+vim.lsp.enable("oxlint")
 vim.lsp.enable("eslint")
 vim.lsp.enable("ts_ls")
 vim.lsp.enable("ccls")
@@ -180,8 +217,75 @@ vim.diagnostic.config({
 	},
 	virtual_text = {
 		prefix = "●",
+		-- biome, oxlint and ts_ls all report on the same buffer in prf; without
+		-- this there is no way to tell which one is complaining.
+		source = "if_many",
+	},
+	float = {
+		source = true,
+		border = "rounded",
 	},
 	update_in_insert = false,
 	underline = true,
 	severity_sort = true,
+})
+
+-- `:LintFix` applies every autofix the linters offer, in the same order as prf's
+-- pre-commit hook: biome's safe lint fixes plus import sorting, then oxlint's.
+-- Pure formatting is conform's job (`<leader>f` / `:Format`), and import sorting
+-- also happens there on save -- this command is for the rest.
+local function apply_biome_fixes(bufnr)
+	local applied = false
+
+	for _, client in ipairs(vim.lsp.get_clients({ bufnr = bufnr, name = "biome" })) do
+		local params = {
+			textDocument = vim.lsp.util.make_text_document_params(bufnr),
+			-- Source actions apply to the whole document; the range is ignored.
+			range = {
+				start = { line = 0, character = 0 },
+				["end"] = { line = 0, character = 0 },
+			},
+			context = {
+				diagnostics = {},
+				only = { "source.fixAll.biome", "source.organizeImports.biome" },
+			},
+		}
+
+		local response = client:request_sync("textDocument/codeAction", params, 5000, bufnr)
+		for _, action in ipairs(response and response.result or {}) do
+			if action.edit then
+				vim.lsp.util.apply_workspace_edit(action.edit, client.offset_encoding)
+				applied = true
+			end
+		end
+	end
+
+	return applied
+end
+
+local function apply_oxlint_fixes(bufnr)
+	local applied = false
+
+	for _, client in ipairs(vim.lsp.get_clients({ bufnr = bufnr, name = "oxlint" })) do
+		client:exec_cmd({
+			title = "Apply oxlint automatic fixes",
+			command = "oxc.fixAll",
+			arguments = { { uri = vim.uri_from_bufnr(bufnr) } },
+		})
+		applied = true
+	end
+
+	return applied
+end
+
+vim.api.nvim_create_user_command("LintFix", function()
+	local bufnr = vim.api.nvim_get_current_buf()
+	local fixed_biome = apply_biome_fixes(bufnr)
+	local fixed_oxlint = apply_oxlint_fixes(bufnr)
+
+	if not fixed_biome and not fixed_oxlint then
+		vim.notify("LintFix: no biome or oxlint client attached to this buffer", vim.log.levels.WARN)
+	end
+end, {
+	desc = "Apply biome + oxlint autofixes to the current buffer",
 })
