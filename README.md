@@ -11,6 +11,27 @@ exceed the number of characters
 clone the repo to ~/nvim and cd into the directory `cp .env.example .env` set
 any environment variables
 
+Plugins are managed by `vim.pack` (built into Neovim 0.12+), so there is nothing
+to bootstrap. Start `nvim` and anything missing is cloned during startup.
+
+## Plugins
+
+Specs live in `lua/config/pack.lua`; per-plugin config lives in `lua/plugins/`.
+Revisions are pinned in `nvim-pack-lock.json`, which is written by `vim.pack`
+and tracked in git — don't edit it by hand.
+
+- `:PackUpdate` — fetch updates, review the diff, `:w` to accept or `:q` to
+  discard. Restart to pick up the new code.
+- `:PackStatus` — review what's installed without fetching.
+- `:PackClean` — delete plugins on disk that are no longer in the spec list.
+
+To pin a plugin, set `version` on its spec to a tag, branch, or the revision
+from the lockfile. `nvim-surround` uses `vim.version.range("*")` to follow its
+latest release tag.
+
+nvim-treesitter and its grammars come from Nix (`programs.neovim.plugins`), not
+from `vim.pack`.
+
 ## Improvements To Do
 
 - snippets/completions -- the keybindings are weird/i don't know how they work.

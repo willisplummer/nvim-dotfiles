@@ -1,4 +1,4 @@
-vim.opt.timeout = true 
+vim.opt.timeout = true
 vim.opt.timeoutlen = 300
 
 local function load_env_file(path)
@@ -17,6 +17,11 @@ local function load_env_file(path)
 	file:close()
 end
 
+-- Must run before `config.pack`, which gates optional plugins on these.
 load_env_file(vim.fn.stdpath("config") .. "/.env")
 
-require("config.lazy")
+-- `mapleader` has to be set before any plugin keymaps are defined.
+require("config.remap")
+require("config.set")
+require("config.treesitter")
+require("config.pack")
