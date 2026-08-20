@@ -20,66 +20,108 @@ vim.api.nvim_create_autocmd("LspAttach", {
 	callback = function(event)
 		local opts = { buffer = event.buf }
 
-		vim.keymap.set("n", "<Leader>d", ":lua vim.diagnostic.open_float()<CR>", opts)
-		vim.keymap.set("n", "K", "<cmd>lua vim.lsp.buf.hover()<cr>", opts)
-		vim.keymap.set("n", "gd", "<cmd>lua vim.lsp.buf.definition()<cr>", opts)
-		vim.keymap.set("n", "gD", "<cmd>lua vim.lsp.buf.declaration()<cr>", opts)
-		vim.keymap.set("n", "gi", "<cmd>lua vim.lsp.buf.implementation()<cr>", opts)
-		vim.keymap.set("n", "go", "<cmd>lua vim.lsp.buf.type_definition()<cr>", opts)
-		vim.keymap.set("n", "gr", "<cmd>lua vim.lsp.buf.references()<cr>", opts)
-		vim.keymap.set("n", "gs", "<cmd>lua vim.lsp.buf.signature_help()<cr>", opts)
-		vim.keymap.set("n", "<F2>", "<cmd>lua vim.lsp.buf.rename()<cr>", opts)
-		vim.keymap.set({ "n", "x" }, "<F3>", "<cmd>lua vim.lsp.buf.format({async = true})<cr>", opts)
-		vim.keymap.set("n", "<F4>", "<cmd>lua vim.lsp.buf.code_action()<cr>", opts)
+		-- Only what Neovim 0.12 does not already provide. The defaults are
+		-- `grn` rename, `gra` code action, `grr` references, `gri` implementation,
+		-- `grt` type definition, `gO` document symbols, `<C-s>` signature help in
+		-- insert mode, and `<C-w>d` for the diagnostic float -- plus buffer-local
+		-- `K` hover, `gq` format (via 'formatexpr') and `<C-]>` (via 'tagfunc').
+		--
+		-- Deliberately not remapped:
+		--   * `K` -- the default is skipped when a custom `K` keymap exists, so the
+		--     old mapping was suppressing the default in order to do the same thing.
+		--   * `gr` -- it shadowed the whole `gr*` family above, making every one of
+		--     them wait out 'timeoutlen' first.
+		--   * `<Leader>d` -- `<C-w>d` is the built-in, and the mapping collided with
+		--     the `<leader>d`-prefixed debugger keys.
+		vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts)
+		vim.keymap.set("n", "gD", vim.lsp.buf.declaration, opts)
+
+		-- Project-specific fix commands; see `:LintFix` below.
 		vim.keymap.set("n", "<leader>ef", "<cmd>EslintFixAll<cr>", opts)
 		vim.keymap.set("n", "<leader>lf", "<cmd>LintFix<cr>", opts)
 	end,
 })
 
 -- Setup language servers using the new vim.lsp.config API
-vim.lsp.config.pyright = {
-	cmd = { "pyright-langserver", "--stdio" },
-	filetypes = { "python" },
-	root_markers = { "pyproject.toml", "setup.py", "requirements.txt", ".git" },
-	capabilities = capabilities,
-	settings = {
-		python = {
-			pythonPath = "/home/dev/patreon_py/venv/bin/python",
-		},
-	},
-}
+-- Python: ruff owns formatting, import ordering and lint; basedpyright owns
+-- navigation only. mypy is deliberately not wired in here -- see below.
+--
+-- Both servers are resolved out of the project's virtualenv (config/venv.lua),
+-- so nothing Python-related needs to be installed globally.
+local venv = require("config.venv")
 
-vim.lsp.config.pylsp = {
-	cmd = { "pylsp" },
-	filetypes = { "python" },
-	root_markers = { "requirements.txt", ".git" },
+-- basedpyright with `typeCheckingMode = "off"`: this is a navigation server
+-- (hover, go-to-definition, references, completion), not a type checker.
+--
+-- ppy's type truth is mypy 2.3.0 plus three custom plugins
+-- (sqlalchemy_nullable_plugin, patreon_logger_plugin, pydantic.mypy), forked
+-- sqlalchemy2-stubs, and per-module `disallow_untyped_defs`. basedpyright reads
+-- none of that, so with checking enabled it disagrees with CI constantly --
+-- loudest on SQLAlchemy nullability, which is exactly what that plugin fixes.
+-- Run mypy out of band (`dmypy run`) for real type errors.
+vim.lsp.config.basedpyright = {
 	capabilities = capabilities,
 	settings = {
-		pylsp = {
-			configurationSources = { "mypy" },
-			plugins = {
-				black = { enabled = true },
-				rope = { enabled = true },
-				ruff = { enabled = true },
-				pylsp_mypy = {
-					enabled = false,
-					live_mode = false,
-					dmypy = true,
-					overrides = {
-						"--show-traceback",
-						"--use-fine-grained-cache",
-					},
-				},
-				pyls_isort = { enabled = true },
-				pyflakes = { enabled = false },
-				pycodestyle = { enabled = false },
-				mccabe = { enabled = false },
+		basedpyright = {
+			analysis = {
+				typeCheckingMode = "off",
+				-- Whole-project analysis on a repo ppy's size is not worth the RAM
+				-- when it is not reporting type errors anyway.
+				diagnosticMode = "openFilesOnly",
+				useLibraryCodeForTypes = true,
 			},
 		},
 	},
-	flags = {
-		debounce_text_changes = 200,
-	},
+	-- Resolve the interpreter from the project rather than hardcoding one venv.
+	-- The old pyright block pinned `/home/dev/patreon_py/venv/bin/python`, which
+	-- was wrong in every other repo -- and moot, since pyright was never installed
+	-- for it to read.
+	--
+	-- This is `on_init` rather than `before_init` for the same reason as oxlint
+	-- below: the client copies `settings` when it is created, so mutating the
+	-- config in `before_init` never reaches the server. basedpyright pulls
+	-- configuration via `workspace/configuration`, which nvim answers from
+	-- `client.settings` -- so update that, then tell it to re-read.
+	on_init = function(client)
+		local project_venv = venv.find(client.root_dir)
+		if not project_venv then
+			return
+		end
+
+		client.settings = vim.tbl_deep_extend("force", client.settings or {}, {
+			python = { pythonPath = vim.fs.joinpath(project_venv, "bin", "python") },
+			basedpyright = {
+				analysis = {
+					venvPath = vim.fs.dirname(project_venv),
+					venv = vim.fs.basename(project_venv),
+				},
+			},
+		})
+
+		client:notify("workspace/didChangeConfiguration", { settings = client.settings })
+	end,
+}
+
+-- ruff's built-in language server (`ruff server`, stable since 0.5) -- the
+-- separate `ruff-lsp` package is deprecated. It reads the project's
+-- pyproject.toml, so ppy's ~200 rule ignores and its isort settings
+-- (force-single-line) apply here exactly as they do in pre-commit.
+--
+-- `cmd` is a function so the binary can be chosen per project: it runs the
+-- venv's own ruff, which is the only copy installed anywhere. A function `cmd`
+-- is expected to return an RPC client rather than an argv list, so it hands the
+-- resolved command to `vim.lsp.rpc.start` itself.
+--
+-- Note this does *not* cover ppy's flake8 PAT01-PAT32 checks: pyproject sets
+-- `lint.external = ["PAT"]`, so ruff knowingly skips them and only the flake8
+-- hook runs them. Those stay invisible in the editor for now.
+vim.lsp.config.ruff = {
+	cmd = function(dispatchers, config)
+		return vim.lsp.rpc.start({ venv.bin("ruff", config.root_dir), "server" }, dispatchers)
+	end,
+	filetypes = { "python" },
+	root_markers = { "pyproject.toml", "ruff.toml", ".ruff.toml", ".git" },
+	capabilities = capabilities,
 }
 
 vim.lsp.config.lua_ls = {
@@ -195,8 +237,8 @@ vim.lsp.config.zls = {
 }
 
 -- Enable the configured LSP servers
-vim.lsp.enable("pyright")
-vim.lsp.enable("pylsp")
+vim.lsp.enable("basedpyright")
+vim.lsp.enable("ruff")
 vim.lsp.enable("lua_ls")
 vim.lsp.enable("stylelint_lsp")
 vim.lsp.enable("biome")
@@ -223,7 +265,6 @@ vim.diagnostic.config({
 	},
 	float = {
 		source = true,
-		border = "rounded",
 	},
 	update_in_insert = false,
 	underline = true,
@@ -234,10 +275,20 @@ vim.diagnostic.config({
 -- pre-commit hook: biome's safe lint fixes plus import sorting, then oxlint's.
 -- Pure formatting is conform's job (`<leader>f` / `:Format`), and import sorting
 -- also happens there on save -- this command is for the rest.
-local function apply_biome_fixes(bufnr)
+---Request source actions of the given kinds from one server and apply them.
+---
+---Servers may return actions unresolved: ruff advertises `resolveProvider` and
+---sends back actions with no `edit`, which have to be fetched with
+---`codeAction/resolve` before there is anything to apply. Biome resolves up
+---front. Handle both, plus actions delivered as a command to execute.
+---@param bufnr integer
+---@param name string Client name
+---@param kinds string[] Code action kinds to request
+---@return boolean applied
+local function apply_source_actions(bufnr, name, kinds)
 	local applied = false
 
-	for _, client in ipairs(vim.lsp.get_clients({ bufnr = bufnr, name = "biome" })) do
+	for _, client in ipairs(vim.lsp.get_clients({ bufnr = bufnr, name = name })) do
 		local params = {
 			textDocument = vim.lsp.util.make_text_document_params(bufnr),
 			-- Source actions apply to the whole document; the range is ignored.
@@ -245,16 +296,27 @@ local function apply_biome_fixes(bufnr)
 				start = { line = 0, character = 0 },
 				["end"] = { line = 0, character = 0 },
 			},
-			context = {
-				diagnostics = {},
-				only = { "source.fixAll.biome", "source.organizeImports.biome" },
-			},
+			context = { diagnostics = {}, only = kinds },
 		}
 
 		local response = client:request_sync("textDocument/codeAction", params, 5000, bufnr)
+
 		for _, action in ipairs(response and response.result or {}) do
-			if action.edit then
-				vim.lsp.util.apply_workspace_edit(action.edit, client.offset_encoding)
+			local edit, command = action.edit, action.command
+
+			if not edit and not command then
+				local resolved = client:request_sync("codeAction/resolve", action, 5000, bufnr)
+				edit = resolved and resolved.result and resolved.result.edit
+				command = resolved and resolved.result and resolved.result.command
+			end
+
+			if edit then
+				vim.lsp.util.apply_workspace_edit(edit, client.offset_encoding)
+				applied = true
+			end
+
+			if command then
+				client:exec_cmd(command, { bufnr = bufnr })
 				applied = true
 			end
 		end
@@ -263,6 +325,7 @@ local function apply_biome_fixes(bufnr)
 	return applied
 end
 
+-- oxlint has no source action; its fixes are behind a command instead.
 local function apply_oxlint_fixes(bufnr)
 	local applied = false
 
@@ -280,12 +343,32 @@ end
 
 vim.api.nvim_create_user_command("LintFix", function()
 	local bufnr = vim.api.nvim_get_current_buf()
-	local fixed_biome = apply_biome_fixes(bufnr)
-	local fixed_oxlint = apply_oxlint_fixes(bufnr)
 
-	if not fixed_biome and not fixed_oxlint then
-		vim.notify("LintFix: no biome or oxlint client attached to this buffer", vim.log.levels.WARN)
+	local linters = {
+		biome = { "source.fixAll.biome", "source.organizeImports.biome" },
+		-- The editor equivalent of ppy's `ruff-check --fix` pre-commit hook.
+		ruff = { "source.fixAll.ruff", "source.organizeImports.ruff" },
+	}
+
+	local attached, applied = false, false
+
+	for name, kinds in pairs(linters) do
+		if #vim.lsp.get_clients({ bufnr = bufnr, name = name }) > 0 then
+			attached = true
+			applied = apply_source_actions(bufnr, name, kinds) or applied
+		end
+	end
+
+	if #vim.lsp.get_clients({ bufnr = bufnr, name = "oxlint" }) > 0 then
+		attached = true
+		applied = apply_oxlint_fixes(bufnr) or applied
+	end
+
+	if not attached then
+		vim.notify("LintFix: no biome, oxlint or ruff client attached to this buffer", vim.log.levels.WARN)
+	elseif not applied then
+		vim.notify("LintFix: nothing to fix", vim.log.levels.INFO)
 	end
 end, {
-	desc = "Apply biome + oxlint autofixes to the current buffer",
+	desc = "Apply biome + oxlint + ruff autofixes to the current buffer",
 })

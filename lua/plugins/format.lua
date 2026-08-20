@@ -7,6 +7,12 @@ local conform = require("conform")
 -- so that saving never applies lint fixes (deleting an import you are halfway
 -- through typing, say); `:LintFix` is the opt-in for those.
 -- Anything else falls back to prettier.
+-- conform calls `command` as `(self, ctx)`, not with a bufnr. The project's own
+-- ruff is preferred over anything on $PATH; see config/venv.lua for why.
+local function ruff_command(_, ctx)
+	return require("config.venv").bin("ruff", ctx.buf)
+end
+
 local function js_formatters(bufnr)
 	if vim.fs.root(bufnr, { "biome.json", "biome.jsonc" }) then
 		return { "biome", "biome-organize-imports" }
@@ -34,7 +40,12 @@ conform.setup({
 		-- `stylelint --fix` first (it owns property ordering), then biome for
 		-- layout. This used to read `styleint`, which conform silently skipped.
 		css = { "stylelint", "biome" },
-		python = { "isort", "black" },
+		-- ppy switched to ruff: pre-commit runs `ruff-check --fix` then
+		-- `ruff-format`, and import ordering is ruff's own isort (I001 plus
+		-- `[tool.ruff.lint.isort]`). black and isort are still in
+		-- dev-requirements.in but have no pre-commit hook -- formatting with them
+		-- here produced diffs CI would undo.
+		python = { "ruff_organize_imports", "ruff_format" },
 		nix = { "nixfmt", stop_after_first = true },
 		zig = { "zigfmt", stop_after_first = true },
 		markdown = { "prettierd", "prettier", stop_after_first = true },
@@ -43,6 +54,13 @@ conform.setup({
 		-- Use the "_" filetype to run formatters on filetypes that don't
 		-- have other formatters configured.
 		["_"] = { "trim_whitespace" },
+	},
+	formatters = {
+		-- `command` is resolved per buffer, so opening two repos in one session
+		-- gets each one its own pinned ruff.
+		ruff_format = { command = ruff_command },
+		ruff_organize_imports = { command = ruff_command },
+		ruff_fix = { command = ruff_command },
 	},
 	-- If this is set, Conform will run the formatter on save.
 	-- It will pass the table to conform.format().

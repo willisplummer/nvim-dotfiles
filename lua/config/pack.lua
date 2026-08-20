@@ -34,6 +34,7 @@ local specs = {
 	gh("JoosepAlviste/nvim-ts-context-commentstring"),
 	gh("nmac427/guess-indent.nvim"),
 	gh("stevearc/conform.nvim"),
+	gh("mfussenegger/nvim-lint"),
 
 	-- Navigation and UI.
 	gh("ibhagwan/fzf-lua"),
@@ -56,6 +57,7 @@ local modules = {
 	"plugins.surround",
 	"plugins.comment",
 	"plugins.format",
+	"plugins.lint",
 	"plugins.fzf-lua",
 	"plugins.harpoon",
 	"plugins.oil",
@@ -64,14 +66,6 @@ local modules = {
 	"plugins.cmp",
 	"plugins.lsp",
 }
-
-if enabled("ENABLE_MASON") then
-	vim.list_extend(specs, {
-		gh("mason-org/mason.nvim"),
-		gh("mason-org/mason-lspconfig.nvim"),
-	})
-	table.insert(modules, "plugins.mason")
-end
 
 if enabled("ENABLE_DEBUGGER") then
 	vim.list_extend(specs, {
