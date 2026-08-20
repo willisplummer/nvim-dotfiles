@@ -40,5 +40,21 @@ vim.keymap.set("n", "Q", "<nop>")
 vim.keymap.set("n", "<C-f>", "<cmd>silent !tmux neww tmux-sessionizer<CR>")
 -- vim.keymap.set("n", "<leader>f", vim.lsp.buf.format)
 
--- find and replace current word
+-- find and replace the word under the cursor
 vim.keymap.set("n", "<leader>s", [[:%s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><Left>]])
+
+-- Same, but for the visual selection. `getregion` reads the selected text
+-- without going through a register, so it does not clobber the unnamed one.
+-- `\V` makes the pattern literal (very nomagic), since a selection is arbitrary
+-- text rather than a word -- no `\<`/`\>` boundaries for the same reason.
+vim.keymap.set("x", "<leader>s", function()
+	local mode = vim.fn.mode()
+	local lines = vim.fn.getregion(vim.fn.getpos("v"), vim.fn.getpos("."), { type = mode })
+	local selection = table.concat(lines, "\n")
+
+	local pattern = vim.fn.escape(selection, [[\/]]):gsub("\n", [[\n]])
+	local replacement = vim.fn.escape(selection, [[\/&~]]):gsub("\n", [[\r]])
+
+	local keys = ("<Esc>:%%s/\\V%s/%s/gI<Left><Left><Left>"):format(pattern, replacement)
+	vim.api.nvim_feedkeys(vim.keycode(keys), "n", false)
+end, { desc = "find and replace the visual selection" })
