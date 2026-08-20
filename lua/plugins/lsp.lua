@@ -209,10 +209,79 @@ vim.lsp.config.eslint = {
 	capabilities = capabilities,
 }
 
+-- typescript-language-server ships no tsserver of its own -- it locates one
+-- under the root it is given, and exits with "Could not find a valid TypeScript
+-- installation" if there is none. Two things break the default resolution here.
+--
+-- First, `root_markers` picks the nearest marker, which is wrong in a monorepo:
+-- prf has a package.json in packages/studio, packages/eslint-plugin-local-rules,
+-- packages/seamless-immutable and .storybook/addon/*, and npm hoists deps to the
+-- repo root, so none of them has a local install.
+--
+-- Second, prf no longer keeps tsserver where the server looks for it. Its
+-- package.json aliases `typescript` to `npm:@typescript/typescript6`, the native
+-- TS 6 port, whose lib/ has no tsserver.js at all -- the legacy server now lives
+-- in a separate `@typescript/old` package. So the path has to be passed
+-- explicitly via initializationOptions, which is the other half of what the
+-- error message asks for.
+--
+-- Walk up for a root that really has a tsserver, newest layout first, and
+-- decline to start if the repo root arrives without one. Same reasoning as the
+-- eslint note above, and as config/venv.lua for python.
+local tsserver_paths = {
+	-- prf: `typescript` is TS 6, the classic server is unbundled.
+	"node_modules/@typescript/old/lib/tsserver.js",
+	-- Stock layout, still what most repos have.
+	"node_modules/typescript/lib/tsserver.js",
+}
+
+---@return string|nil dir Project root
+---@return string|nil tsserver Absolute path to tsserver.js under it
+local function ts_project(dir)
+	while dir do
+		for _, rel in ipairs(tsserver_paths) do
+			local path = vim.fs.joinpath(dir, rel)
+			if vim.uv.fs_stat(path) then
+				return dir, path
+			end
+		end
+
+		-- Checked after tsserver, so a repo root that has one still counts.
+		if vim.uv.fs_stat(vim.fs.joinpath(dir, ".git")) then
+			return nil
+		end
+
+		local parent = vim.fs.dirname(dir)
+		if parent == dir then
+			return nil
+		end
+		dir = parent
+	end
+end
+
 vim.lsp.config.ts_ls = {
 	cmd = { "typescript-language-server", "--stdio" },
 	filetypes = { "javascript", "javascriptreact", "typescript", "typescriptreact" },
-	root_markers = { "package.json", "tsconfig.json", "jsconfig.json", ".git" },
+	root_dir = function(bufnr, on_dir)
+		local path = vim.api.nvim_buf_get_name(bufnr)
+
+		if path ~= "" then
+			local dir = ts_project(vim.fs.dirname(path))
+
+			if dir then
+				on_dir(dir)
+			end
+		end
+	end,
+	before_init = function(params, config)
+		local _, tsserver = ts_project(config.root_dir)
+
+		if tsserver then
+			params.initializationOptions = vim.tbl_deep_extend("force", params.initializationOptions or {}, {
+				tsserver = { path = tsserver },
+			})
+		end
+	end,
 	capabilities = capabilities,
 }
 
