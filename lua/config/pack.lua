@@ -25,10 +25,9 @@ local specs = {
 	-- Colorscheme first, so anything reading highlight groups sees the theme.
 	gh("folke/tokyonight.nvim"),
 
-	-- Shared libraries and icon providers.
-	gh("nvim-lua/plenary.nvim"),
+	-- Icon provider. mini.icons mocks nvim-web-devicons (see plugins/icons.lua),
+	-- so the real devicons package is not installed.
 	gh("echasnovski/mini.icons"),
-	gh("nvim-tree/nvim-web-devicons"),
 
 	-- Editing.
 	{ src = gh("kylechui/nvim-surround"), version = vim.version.range("*") },
@@ -49,9 +48,6 @@ local specs = {
 	gh("hrsh7th/cmp-nvim-lsp"),
 	gh("hrsh7th/nvim-cmp"),
 	gh("neovim/nvim-lspconfig"),
-
-	-- Markdown.
-	gh("MeanderingProgrammer/render-markdown.nvim"),
 }
 
 -- Config modules, required in this order after everything is on 'runtimepath'.
@@ -68,7 +64,6 @@ local modules = {
 	"plugins.which-key",
 	"plugins.cmp",
 	"plugins.lsp",
-	"plugins.markdown",
 }
 
 if enabled("ENABLE_MASON") then
@@ -87,11 +82,6 @@ if enabled("ENABLE_DEBUGGER") then
 		gh("theHamsta/nvim-dap-virtual-text"),
 	})
 	table.insert(modules, "plugins.debugger")
-end
-
-if enabled("ENABLE_OBSIDIAN") then
-	table.insert(specs, gh("epwalsh/obsidian.nvim"))
-	table.insert(modules, "plugins.obsidian")
 end
 
 -- `confirm = false` matches how lazy.nvim behaved: the specs above are the

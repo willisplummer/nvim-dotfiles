@@ -1,6 +1,6 @@
 require("grapple").setup({
 	scope = "git", -- also try out "git_branch"
-	icons = true, -- setting to "true" requires "nvim-web-devicons"
+	icons = true, -- served by mini.icons via mock_nvim_web_devicons() (plugins/icons.lua)
 	status = false,
 })
 
