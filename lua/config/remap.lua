@@ -1,11 +1,17 @@
 vim.g.mapleader = " "
 
--- copy and paste
+-- copy and paste --
 vim.keymap.set("", "<leader>y", '"*y', { desc = "yank to clipboard" })
 vim.keymap.set("", "<leader>Y", '"*Y', { desc = "yank until EOL to clipboard" })
 
 vim.keymap.set("n", "<leader>pp", '"*p', { desc = "paste after cursor from clipboard" })
 vim.keymap.set("n", "<leader>PP", '"*P', { desc = "paste before cursor from clipboard" })
+
+-- while highlighting text, replace with yanked
+-- and keep yanked text in the register
+vim.keymap.set("x", "<leader>p", [["_dP]])
+
+----
 
 -- jump highighted text (visual mode) up and down
 vim.keymap.set("v", "J", ":m '>+1<CR>gv=gv")
@@ -24,21 +30,10 @@ vim.keymap.set("n", "<C-u>", "<C-u>zz")
 vim.keymap.set("n", "n", "nzzzv")
 vim.keymap.set("n", "N", "Nzzzv")
 
--- while highlighting text, replace with yanked
--- but keep yanked text in the register
---"greatest remap ever" ... idk
-vim.keymap.set("x", "<leader>p", [["_dP]])
-
--- next greatest remap ever : asbjornHaland
-vim.keymap.set({ "n", "v" }, "<leader>y", [["+y]])
-vim.keymap.set("n", "<leader>Y", [["+Y]])
-
--- deletes the text into the blackhole register (doesn't overwrite your current clipboard
--- vim.keymap.set({ "n", "v" }, "<leader>d", [["_d]])
-
+-- disable default Q mode
 vim.keymap.set("n", "Q", "<nop>")
+-- open tmux sessionizer from inside nvim
 vim.keymap.set("n", "<C-f>", "<cmd>silent !tmux neww tmux-sessionizer<CR>")
--- vim.keymap.set("n", "<leader>f", vim.lsp.buf.format)
 
 -- find and replace the word under the cursor
 vim.keymap.set("n", "<leader>s", [[:%s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><Left>]])
