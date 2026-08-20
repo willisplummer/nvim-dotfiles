@@ -32,7 +32,6 @@ local specs = {
 	-- Editing.
 	{ src = gh("kylechui/nvim-surround"), version = vim.version.range("*") },
 	gh("JoosepAlviste/nvim-ts-context-commentstring"),
-	gh("echasnovski/mini.comment"),
 	gh("nmac427/guess-indent.nvim"),
 	gh("stevearc/conform.nvim"),
 

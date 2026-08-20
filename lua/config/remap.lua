@@ -42,7 +42,6 @@ vim.keymap.set("n", "<C-f>", "<cmd>silent !tmux neww tmux-sessionizer<CR>")
 
 -- find and replace the word under the cursor
 vim.keymap.set("n", "<leader>s", [[:%s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><Left>]])
-
 -- Same, but for the visual selection. `getregion` reads the selected text
 -- without going through a register, so it does not clobber the unnamed one.
 -- `\V` makes the pattern literal (very nomagic), since a selection is arbitrary
