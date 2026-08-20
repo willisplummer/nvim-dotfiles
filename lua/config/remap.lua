@@ -4,8 +4,8 @@ vim.g.mapleader = " "
 vim.keymap.set("", "<leader>y", '"*y', { desc = "yank to clipboard" })
 vim.keymap.set("", "<leader>Y", '"*Y', { desc = "yank until EOL to clipboard" })
 
-vim.keymap.set("n", "<leader>p", '"*p', { desc = "paste after cursor from clipboard" })
-vim.keymap.set("n", "<leader>P", '"*P', { desc = "paste before cursor from clipboard" })
+vim.keymap.set("n", "<leader>pp", '"*p', { desc = "paste after cursor from clipboard" })
+vim.keymap.set("n", "<leader>PP", '"*P', { desc = "paste before cursor from clipboard" })
 
 -- jump highighted text (visual mode) up and down
 vim.keymap.set("v", "J", ":m '>+1<CR>gv=gv")
@@ -40,15 +40,5 @@ vim.keymap.set("n", "Q", "<nop>")
 vim.keymap.set("n", "<C-f>", "<cmd>silent !tmux neww tmux-sessionizer<CR>")
 -- vim.keymap.set("n", "<leader>f", vim.lsp.buf.format)
 
-vim.keymap.set("n", "<C-k>", "<cmd>cnext<CR>zz")
-vim.keymap.set("n", "<C-j>", "<cmd>cprev<CR>zz")
-vim.keymap.set("n", "<leader>k", "<cmd>lnext<CR>zz")
-vim.keymap.set("n", "<leader>j", "<cmd>lprev<CR>zz")
-
+-- find and replace current word
 vim.keymap.set("n", "<leader>s", [[:%s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><Left>]])
-vim.keymap.set("n", "<leader>x", "<cmd>!chmod +x %<CR>", { silent = true })
-
--- reload vimrc file
--- vim.keymap.set("n", "<leader><leader>", function()
---     vim.cmd("so")
--- end)
